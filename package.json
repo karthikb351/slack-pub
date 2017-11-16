@@ -22,6 +22,11 @@
     "jsonfile": "^4.0.0",
     "lokijs": "^1.5.1",
     "lowdb": "^0.16.2",
-    "pug": "^2.0.0-rc.2"
+    "moment": "^2.19.2",
+    "moment-timezone": "^0.5.14",
+    "node-emoji": "^1.8.1",
+    "pug": "^2.0.0-rc.2",
+    "semantic-ui": "^2.2.13",
+    "showdown": "^1.8.2"
   }
 }

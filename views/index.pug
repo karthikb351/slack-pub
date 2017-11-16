@@ -1,5 +1,132 @@
 html
-  head
-    title= title
-  body
-    h1= message
+	head
+		meta(charset="utf-8")
+		meta(http-equiv="X-UA-Compatible", content="IE=edge")
+		title #{title}
+		link(href="http://fonts.googleapis.com/css?family=Lato:400,700,900", rel="stylesheet", type="text/css")
+		link(rel="stylesheet", type="text/css", href="public/main.css")
+	body
+
+		#layout.layout
+		
+			a(href="#menu", id="menuLink", class="menu-link")
+				span
+			#menu.menu
+				
+				if config.team_name
+					.team-menu #{config.team_name}
+				else
+					.team-menu Slack Archive
+				.listings
+					.listings_channels
+						h2.listings_header Public Channels
+						ul.channel_list
+							for channel in public_channels
+								li.channel(class=channel.name === title ? "active" : "")
+									a.channel_name(class=channel.name === title ? "active" : "", href="/"+channel.name)
+										span
+											span.channel_prefix #
+											| #{channel.name}
+					.listings_direct-messages
+						h2.listings_header Archived Channels
+						ul.channel_list
+							for channel in archived_channels
+								li.channel(class=channel.name === title ? "active" : "")
+									a.channel_name(class= channel.name === title ? "active" : "", href="/"+channel.name)
+										span
+											span.channel_prefix #
+											| #{channel.name}
+			#main.content
+				.channel-menu
+					span.channel-menu_name
+						span.channel-menu_prefix #
+						| #{title}
+				div#messages.message-history
+					for message in messages
+						div.message(id=message.timestamp)
+							span.message_profile-pic(style="background-image: url('"+message.user.profile.image_48+"');", href="")
+							span.message_username #{message.user.name}
+							a(href="/"+channel+"#"+message.timestamp, style="text-decoration: none;")
+								span.message_timestamp #{message.ts_pretty}
+							span.message_star
+							span.message_content !{ message.text }
+							if message.children
+								.message_children
+									for cmessage in message.children
+										div.message(id=cmessage.timestamp)
+											span.message_profile-pic(style="background-image: url('"+cmessage.user.profile.image_48+"');", href="")
+											span.message_username #{cmessage.user.name}
+											a(href="/"+channel+"#"+cmessage.timestamp, style="text-decoration: none;")
+												span.message_timestamp #{cmessage.ts_pretty}
+											span.message_star
+											span.message_content !{ cmessage.text }
+		.footer
+			if config.slackin_url
+				.user-menu-container
+					.user-menu
+						span.user-menu_profile-pic(style="background-image:url('"+config.team_icon+"')")
+						span.user-menu_username Join the chat!
+						span#noOfUsers.connection_status
+							script(async="", defer="", src=config.slackin_url)
+			else
+				.user-menu-container
+					.user-menu
+						span(style="color:white;") This is a read-only Slack archive
+		script(type="text/javascript").
+			var messagesDiv = document.getElementById("messages");
+			if(window.location.hash) {
+			var messageOfInterest = document.getElementById(window.location.hash.substr(1));
+			if (messageOfInterest) {
+			messagesDiv.scrollTop = messageOfInterest.offsetTop - 65;
+			messageOfInterest.style.backgroundColor = "#a07b9d"
+			} else {
+			messagesDiv.scrollTop = messagesDiv.scrollHeight;
+			}
+			} else {
+			messagesDiv.scrollTop = messagesDiv.scrollHeight;
+			}
+			(function (window, document) {
+				    var layout   = document.getElementById('layout'),
+				        menu     = document.getElementById('menu'),
+				        menuLink = document.getElementById('menuLink'),
+				        content  = document.getElementById('main');
+
+				    function toggleClass(element, className) {
+				        var classes = element.className.split(/\s+/),
+				            length = classes.length,
+				            i = 0;
+
+				        for(; i < length; i++) {
+				          if (classes[i] === className) {
+				            classes.splice(i, 1);
+				            break;
+				          }
+				        }
+				        // The className is not found
+				        if (length === classes.length) {
+				            classes.push(className);
+				        }
+
+				        element.className = classes.join(' ');
+				    }
+
+				    function toggleAll(e) {
+				        var active = 'active';
+
+				        e.preventDefault();
+				        toggleClass(layout, active);
+				        toggleClass(menu, active);
+				        toggleClass(menuLink, active);
+				    }
+
+				    menuLink.onclick = function (e) {
+				        toggleAll(e);
+				    };
+
+				    content.onclick = function(e) {
+				        if (menu.className.indexOf('active') !== -1) {
+				            toggleAll(e);
+				        }
+				    };
+
+				}(this, this.document));

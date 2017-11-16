@@ -25,7 +25,6 @@ body {
   height: 100%;
   width: 100%;
   margin: 0;
-  padding-top: 53px;
   padding-bottom: 64px;
 }
 
@@ -184,16 +183,17 @@ main {
   background-color: #4d394b;
   overflow-y: auto;
   overflow-x: hidden;
+  padding-bottom: 2rem;
 }
 
 .message-history {
-  margin-left: 220px;
   overflow-y: auto;
   overflow-x: hidden;
   height: 100%;
   padding: 0 18px 1rem 1.5rem;
   overflow: scroll;
   overflow-x: hidden;
+  padding-bottom: 4rem;
 }
 
 .listings_channels {
@@ -343,7 +343,6 @@ main {
   border-radius: 0.2rem;
   width: 48px;
   height: 48px;
-  background-image: url(https://s3-us-west-2.amazonaws.com/slack-files2/avatars/2015-06-15/6390135968_b21514bed34e7e249d0f_132.jpg);
   background-size: cover;
   margin-right: 8px;
 }
@@ -386,4 +385,150 @@ main {
   bottom: 0;
   min-height: 41px !important;
   padding: 9px 5px 9px 8px;
+}
+
+
+/*
+Add transition to containers so they can push in and out.
+*/
+#layout,
+#menu,
+.menu-link {
+    -webkit-transition: all 0.2s ease-out;
+    -moz-transition: all 0.2s ease-out;
+    -ms-transition: all 0.2s ease-out;
+    -o-transition: all 0.2s ease-out;
+    transition: all 0.2s ease-out;
+}
+
+/*
+This is the parent `<div>` that contains the menu and the content area.
+*/
+#layout {
+    position: relative;
+    left: 0;
+    padding-left: 0;
+}
+    #layout.active #menu {
+        left: 220px;
+        width: 220px;
+    }
+
+    #layout.active .menu-link {
+        left: 220px;
+    }
+
+
+
+
+/*
+The `#menu` `<div>` is the parent `<div>` that contains the `.pure-menu` that
+appears on the left side of the page.
+*/
+
+#menu {
+    margin-left: -220px; /* "#menu" width */
+    width: 220px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 1000; /* so the menu or its navicon stays above all content */
+    background: #191818;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* -- Dynamic Button For Responsive Menu -------------------------------------*/
+
+/*
+The button to open/close the Menu is custom-made and not part of Pure. Here's
+how it works:
+*/
+
+/*
+`.menu-link` represents the responsive menu toggle that shows/hides on
+small screens.
+*/
+.menu-link {
+    position: fixed;
+    display: block; /* show this only on small screens */
+    top: 0;
+    left: 0; /* "#menu width" */
+    background: #000;
+    background: rgba(0,0,0,0.7);
+    font-size: 10px; /* change this value to increase/decrease button size */
+    z-index: 10;
+    width: 2em;
+    height: auto;
+    padding: 2.1em 1.6em;
+}
+
+    .menu-link:hover,
+    .menu-link:focus {
+        background: #000;
+    }
+
+    .menu-link span {
+        position: relative;
+        display: block;
+    }
+
+    .menu-link span,
+    .menu-link span:before,
+    .menu-link span:after {
+        background-color: #fff;
+        width: 100%;
+        height: 0.2em;
+    }
+
+        .menu-link span:before,
+        .menu-link span:after {
+            position: absolute;
+            margin-top: -0.6em;
+            content: " ";
+        }
+
+        .menu-link span:after {
+            margin-top: 0.6em;
+        }
+
+
+/* -- Responsive Styles (Media Queries) ------------------------------------- */
+
+/*
+Hides the menu at `48em`, but modify this based on your app's needs.
+*/
+@media (min-width: 48em) {
+
+    #layout {
+        padding-left: 220px; /* left col width "#menu" */
+        left: 0;
+    }
+    #menu {
+        left: 220px;
+    }
+
+    .menu-link {
+        position: fixed;
+        left: 220px;
+        display: none;
+    }
+
+    #layout.active .menu-link {
+        left: 220px;
+    }
+}
+
+@media (max-width: 48em) {
+    /* Only apply this when the window is small. Otherwise, the following
+    case results in extra padding on the left:
+        * Make the window small.
+        * Tap the menu to trigger the active state.
+        * Make the window large again.
+    */
+    #layout.active {
+        position: relative;
+        left: 220px;
+    }
 }
