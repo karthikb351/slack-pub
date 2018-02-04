@@ -87,6 +87,17 @@ for (var i = 0; i < channelFolders.length; i++) {
 console.info('Loaded ' + count + ' messages')
 console.info('Skipped ' + skip + ' messages')
 
+
+var publicChannels = channelsdb.chain()
+          .find({'is_archived': false})
+          .simplesort('name')
+          .data()
+
+var archivedChannels = channelsdb.chain()
+          .find({'is_archived': true})
+          .simplesort('name')
+          .data()
+
 const app = express()
 
 app.set('view engine', 'pug')
@@ -95,6 +106,30 @@ app.use('/public', express.static('static'))
 
 app.get('/', function (req, res) {
   res.redirect('/general')
+})
+
+app.get('/api/:channel_id/messages', function (res, req) {
+  var channelId = req.params.channel_id
+
+  var channel = channelsdb.findOne({'name': channelId})
+
+  if (channel === null) {
+    res.json({
+      'error': 'NOT_FOUND',
+      'code': 404
+    })
+  }
+
+  var page = req.params.page
+  var offset = req.params.offset
+  if (isNaN(page) || isNaN(offset)) {
+    res.json({
+      'error': 'NOT_FOUND',
+      'code': 404
+    })
+  }
+
+  console.log(res)
 })
 
 app.get('/:id', function (req, res) {
@@ -109,16 +144,6 @@ app.get('/:id', function (req, res) {
   var messages = messagesdb.chain()
             .find({'channel_id': channelId})
             .simplesort('ts')
-            .data()
-
-  var publicChannels = channelsdb.chain()
-            .find({'is_archived': false})
-            .simplesort('name')
-            .data()
-
-  var archivedChannels = channelsdb.chain()
-            .find({'is_archived': true})
-            .simplesort('name')
             .data()
 
   res.render('index', {

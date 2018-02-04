@@ -43,20 +43,20 @@ html
 						| #{title}
 				div#messages.message-history
 					for message in messages
-						div.message(id=message.timestamp)
+						div.message(id=message.ts)
 							span.message_profile-pic(style="background-image: url('"+message.user.profile.image_48+"');", href="")
 							span.message_username #{message.user.name}
-							a(href="/"+channel+"#"+message.timestamp, style="text-decoration: none;")
+							a(href="/"+channel+"#"+message.ts, style="text-decoration: none;")
 								span.message_timestamp #{message.ts_pretty}
 							span.message_star
 							span.message_content !{ message.text }
 							if message.children
 								.message_children
 									for cmessage in message.children
-										div.message(id=cmessage.timestamp)
+										div.message(id=cmessage.ts)
 											span.message_profile-pic(style="background-image: url('"+cmessage.user.profile.image_48+"');", href="")
 											span.message_username #{cmessage.user.name}
-											a(href="/"+channel+"#"+cmessage.timestamp, style="text-decoration: none;")
+											a(href="/"+channel+"#"+cmessage.ts, style="text-decoration: none;")
 												span.message_timestamp #{cmessage.ts_pretty}
 											span.message_star
 											span.message_content !{ cmessage.text }
@@ -78,7 +78,7 @@ html
 			var messageOfInterest = document.getElementById(window.location.hash.substr(1));
 			if (messageOfInterest) {
 			messagesDiv.scrollTop = messageOfInterest.offsetTop - 65;
-			messageOfInterest.style.backgroundColor = "#a07b9d"
+			messageOfInterest.style.backgroundColor = "#f1f1f1"
 			} else {
 			messagesDiv.scrollTop = messagesDiv.scrollHeight;
 			}
