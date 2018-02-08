@@ -1,11 +1,9 @@
 var system = require('system')
 var fs = require('fs')
-var casper = require('casper').create({
-  verbose: true,
-  logLevel: 'debug'
-})
+var casper = require('casper').create()
 
 var config = {
+  startExportIfPossible: false,
   revokeDownloadTokens: false,
   revokePastExports: false
 }
@@ -78,15 +76,16 @@ casper.then(function () {
 // When at the export page, do some things!
 
 // If export button is visible, click it and wait until the download link is available
-casper.waitForUrl(domain + '/services/export', function () {
-  if (this.exists(cssSelector.exportPage.export.startExportBtn)) {
-    this.click(cssSelector.exportPage.export.startExportBtn)
-    reloadUntil(cssSelector.exportPage.exportHistory.latestExportDownloadBtn, 2500, function () {
-      return casper.exists(cssSelector.exportPage.exportHistory.latestExportDownloadBtn) // return when element exists
-    })
-  }
-})
-
+if (config.startExportIfPossible) {
+  casper.waitForUrl(domain + '/services/export', function () {
+    if (this.exists(cssSelector.exportPage.export.startExportBtn)) {
+      this.click(cssSelector.exportPage.export.startExportBtn)
+      reloadUntil(cssSelector.exportPage.exportHistory.latestExportDownloadBtn, 2500, function () {
+        return casper.exists(cssSelector.exportPage.exportHistory.latestExportDownloadBtn) // return when element exists
+      })
+    }
+  })
+}
 // Look for the latest downloadable export and click the button
 casper.waitForUrl(domain + '/services/export', function () {
   this.echo(this.getTitle())

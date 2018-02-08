@@ -156,6 +156,7 @@ app.get('/:id', function (req, res) {
   })
 })
 
-app.listen(3000, function () {
+
+app.listen(process.env.PORT || 3000, function () {
   console.log('slack-pub is running on port 3000! Visit http://localhost:3000/ to view.')
 })

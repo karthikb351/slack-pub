@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "casper": "casperjs scripts/fetchArchive.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "fetch": "casperjs scripts/fetchArchive.js",
+    "test": "echo \"Error: no test specified\" && exit 0"
   },
   "repository": {
     "type": "git",
