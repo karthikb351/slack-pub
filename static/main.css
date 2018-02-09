@@ -159,6 +159,15 @@ main {
   cursor: pointer;
 }
 
+.channel-menu {
+  top: 0;
+  position: absolute;
+  right: 0;
+  left: 220px;
+  z-index: 100;
+  background-color: white;
+}
+
 .channel-menu_name {
   display: inline-block;
   padding: 0 0.5rem 0 1.5rem;
@@ -190,10 +199,10 @@ main {
   overflow-y: auto;
   overflow-x: hidden;
   height: 100%;
-  padding: 0 18px 1rem 1.5rem;
+  padding: 0 1.5rem 0 1.5rem;
   overflow: scroll;
   overflow-x: hidden;
-  padding-bottom: 4rem;
+  padding-top: 64px;
 }
 
 .listings_channels {

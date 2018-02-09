@@ -8,6 +8,7 @@ const moment = require('moment-timezone')
 const showdown = require('showdown')
 const emoji = require('node-emoji')
 const config = require('./config')
+const mcache = require('memory-cache');
 var markdownConverter = new showdown.Converter()
 var db = new Loki('Example')
 
@@ -39,7 +40,7 @@ for (var i = 0; i < channelFolders.length; i++) {
       if (messagesTemp[k]['type'] === 'message' && messagesTemp[k]['subtype'] === undefined) {
         count++
         messagesTemp[k]['channel_id'] = channelName
-        messagesTemp[k]['channel'] = channelsdb.findOne({'name': channelName})
+        // messagesTemp[k]['channel'] = channelsdb.findOne({'name': channelName})
         messagesTemp[k]['user_id'] = messagesTemp[k]['user']
         messagesTemp[k]['user'] = usersdb.findOne({'id': messagesTemp[k]['user_id']})
         messagesTemp[k]['ts_pretty'] = moment.unix(messagesTemp[k]['ts']).tz('Asia/Kolkata').format('dddd, MMMM Do YYYY, h:mm:ss a')
@@ -87,7 +88,6 @@ for (var i = 0; i < channelFolders.length; i++) {
 console.info('Loaded ' + count + ' messages')
 console.info('Skipped ' + skip + ' messages')
 
-
 var publicChannels = channelsdb.chain()
           .find({'is_archived': false})
           .simplesort('name')
@@ -99,17 +99,36 @@ var archivedChannels = channelsdb.chain()
           .data()
 
 const app = express()
-
+app.locals.pretty = true
 app.set('view engine', 'pug')
 
 app.use('/public', express.static('static'))
+
+var cache = (duration) => {
+  return (req, res, next) => {
+    let key = '__express__' + req.originalUrl || req.url
+    let cachedBody = mcache.get(key)
+    if (cachedBody) {
+      res.send(cachedBody)
+    } else {
+      res.sendResponse = res.send
+      res.send = (body) => {
+        mcache.put(key, body, duration * 1000)
+        res.sendResponse(body)
+      }
+      next()
+    }
+  }
+}
 
 app.get('/', function (req, res) {
   res.redirect('/general')
 })
 
-app.get('/api/:channel_id/messages', function (res, req) {
-  var channelId = req.params.channel_id
+app.get('/api/:channelId/messages', cache(10), function (req, res) {
+  var channelId = req.params.channelId
+  var page = req.query.page
+  var offset = req.query.offset
 
   var channel = channelsdb.findOne({'name': channelId})
 
@@ -119,9 +138,6 @@ app.get('/api/:channel_id/messages', function (res, req) {
       'code': 404
     })
   }
-
-  var page = req.params.page
-  var offset = req.params.offset
   if (isNaN(page) || isNaN(offset)) {
     res.json({
       'error': 'NOT_FOUND',
@@ -129,7 +145,21 @@ app.get('/api/:channel_id/messages', function (res, req) {
     })
   }
 
-  console.log(res)
+  var messages = messagesdb.chain()
+            .find({'channel_id': channelId})
+            .simplesort('ts', true)
+            .offset(page * offset)
+            .limit(offset)
+            .data()
+  messages.sort(function (m1, m2) {
+    if (m1.ts < m2.ts) return -1
+    if (m1.ts > m2.ts) return 1
+    return 0
+  })
+  res.json({
+    'code': 200,
+    'data': messages
+  })
 })
 
 app.get('/:id', function (req, res) {
@@ -143,19 +173,23 @@ app.get('/:id', function (req, res) {
 
   var messages = messagesdb.chain()
             .find({'channel_id': channelId})
-            .simplesort('ts')
+            .simplesort('ts', true)
+            .limit(100)
             .data()
-
+  messages.sort(function (m1, m2) {
+    if (m1.ts < m2.ts) return -1
+    if (m1.ts > m2.ts) return 1
+    return 0
+  })
   res.render('index', {
     config: config,
     title: channel['name'],
     channel: channel['name'],
-    messages: messages,
+    messages: JSON.stringify(messages),
     public_channels: publicChannels,
     archived_channels: archivedChannels
   })
 })
-
 
 app.listen(process.env.PORT || 3000, function () {
   console.log('slack-pub is running on port 3000! Visit http://localhost:3000/ to view.')

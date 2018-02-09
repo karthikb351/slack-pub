@@ -8,11 +8,11 @@ html
 	body
 
 		#layout.layout
-		
+
 			a(href="#menu", id="menuLink", class="menu-link")
 				span
 			#menu.menu
-				
+
 				if config.team_name
 					.team-menu #{config.team_name}
 				else
@@ -42,91 +42,38 @@ html
 						span.channel-menu_prefix #
 						| #{title}
 				div#messages.message-history
-					for message in messages
-						div.message(id=message.ts)
-							span.message_profile-pic(style="background-image: url('"+message.user.profile.image_48+"');", href="")
-							span.message_username #{message.user.name}
-							a(href="/"+channel+"#"+message.ts, style="text-decoration: none;")
-								span.message_timestamp #{message.ts_pretty}
+					div#vue-app
+						infinite-loading(@infinite="infiniteHandler", ref="infiniteLoading", spinner="spiral", direction="top", v-if="loadedFirstMessages===true")
+						div.message(v-bind:id="message.ts" v-for="message in messages")
+							//- span.message_profile-pic(style="background-image: url('"+message.user.profile.image_48+"');", href="")
+							span.message_username {{ message.user.name }}
+							a(href="/"+channel+"#"+message, style="text-decoration: none;")
+								span.message_timestamp  {{ message.ts_pretty }}
 							span.message_star
-							span.message_content !{ message.text }
-							if message.children
-								.message_children
-									for cmessage in message.children
-										div.message(id=cmessage.ts)
-											span.message_profile-pic(style="background-image: url('"+cmessage.user.profile.image_48+"');", href="")
-											span.message_username #{cmessage.user.name}
-											a(href="/"+channel+"#"+cmessage.ts, style="text-decoration: none;")
-												span.message_timestamp #{cmessage.ts_pretty}
-											span.message_star
-											span.message_content !{ cmessage.text }
-		.footer
-			if config.slackin_url
-				.user-menu-container
-					.user-menu
-						span.user-menu_profile-pic(style="background-image:url('"+config.team_icon+"')")
-						span.user-menu_username Join the chat!
-						span#noOfUsers.connection_status
-							script(async="", defer="", src=config.slackin_url)
-			else
-				.user-menu-container
-					.user-menu
-						span(style="color:white;") This is a read-only Slack archive
+							span.message_content(v-html="message.text")
+							.message_children(v-if="message.children")
+								div.message(v-bind:id="cmessage.ts" v-for="cmessage in message.children")
+									//- span.message_profile-pic(style="background-image: url('"+cmessage.user.profile.image_48+"');", href="")
+									span.message_username {{ cmessage.user.name }}
+									a(href="/"+channel+"#"+cmessage, style="text-decoration: none;")
+										span.message_timestamp {{ cmessage.ts_pretty }}
+									span.message_star
+									span.message_content(v-html="cmessage.text")
+				.footer
+					if config.slackin_url
+						.user-menu-container
+							.user-menu
+								span.user-menu_profile-pic(style="background-image:url('"+config.team_icon+"')")
+								span.user-menu_username Join the chat!
+								span#noOfUsers.connection_status
+									script(async="", defer="", src=config.slackin_url)
+					else
+						.user-menu-container
+							.user-menu
+								span(style="color:white;") This is a read-only Slack archive
 		script(type="text/javascript").
-			var messagesDiv = document.getElementById("messages");
-			if(window.location.hash) {
-			var messageOfInterest = document.getElementById(window.location.hash.substr(1));
-			if (messageOfInterest) {
-			messagesDiv.scrollTop = messageOfInterest.offsetTop - 65;
-			messageOfInterest.style.backgroundColor = "#f1f1f1"
-			} else {
-			messagesDiv.scrollTop = messagesDiv.scrollHeight;
-			}
-			} else {
-			messagesDiv.scrollTop = messagesDiv.scrollHeight;
-			}
-			(function (window, document) {
-				    var layout   = document.getElementById('layout'),
-				        menu     = document.getElementById('menu'),
-				        menuLink = document.getElementById('menuLink'),
-				        content  = document.getElementById('main');
-
-				    function toggleClass(element, className) {
-				        var classes = element.className.split(/\s+/),
-				            length = classes.length,
-				            i = 0;
-
-				        for(; i < length; i++) {
-				          if (classes[i] === className) {
-				            classes.splice(i, 1);
-				            break;
-				          }
-				        }
-				        // The className is not found
-				        if (length === classes.length) {
-				            classes.push(className);
-				        }
-
-				        element.className = classes.join(' ');
-				    }
-
-				    function toggleAll(e) {
-				        var active = 'active';
-
-				        e.preventDefault();
-				        toggleClass(layout, active);
-				        toggleClass(menu, active);
-				        toggleClass(menuLink, active);
-				    }
-
-				    menuLink.onclick = function (e) {
-				        toggleAll(e);
-				    };
-
-				    content.onclick = function(e) {
-				        if (menu.className.indexOf('active') !== -1) {
-				            toggleAll(e);
-				        }
-				    };
-
-				}(this, this.document));
+			window.channelId = '!{title}'
+		script(type="text/javascript", src="https://cdn.jsdelivr.net/npm/vue")
+		script(type="text/javascript", src="https://cdn.jsdelivr.net/npm/vue-resource@1.3.5")
+		script(type="text/javascript", src="https://cdn.jsdelivr.net/npm/vue-infinite-loading@2.2.3/dist/vue-infinite-loading.min.js")
+		script(type="text/javascript", src="public/main.js")
